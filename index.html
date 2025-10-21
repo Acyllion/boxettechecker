@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Parcel Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                400: "#60a5fa",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+                900: "#1e3a8a",
+              },
+              surface: {
+                200: "#e2e8f0",
+                300: "#cbd5e1",
+                400: "#94a3b8",
+                600: "#475569",
+                700: "#334155",
+                800: "#1e293b",
+                900: "#0f172a",
+              },
+            },
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+            animation: {
+              "fade-in": "fadeIn 400ms ease",
+              "fade-in-up": "fadeInUp 500ms ease",
+              "slide-up": "slideUp 300ms ease",
+              "bounce-gentle": "bounceGentle 4s ease-in-out infinite",
+              "scale-in": "scaleIn 250ms ease",
+              float: "float 6s ease-in-out infinite",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0", transform: "translateY(12px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              fadeInUp: {
+                "0%": { opacity: "0", transform: "translateY(16px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              slideUp: {
+                "0%": { opacity: "0", transform: "translateY(20px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              bounceGentle: {
+                "0%, 100%": { transform: "translateY(-3px)" },
+                "50%": { transform: "translateY(2px)" },
+              },
+              float: {
+                "0%, 100%": { transform: "translateY(0)" },
+                "50%": { transform: "translateY(-8px)" },
+              },
+              scaleIn: {
+                "0%": { opacity: "0", transform: "scale(0.9)" },
+                "100%": { opacity: "1", transform: "scale(1)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #2563eb, #7c3aed, #db2777);
+        --dark-gradient: linear-gradient(
+          135deg,
+          #1e3a8a 0%,
+          #312e81 50%,
+          #433880 100%
+        );
+        --glass-bg: rgba(15, 23, 42, 0.18);
+        --glass-border: rgba(255, 255, 255, 0.09);
+        --card-bg: rgba(15, 23, 42, 0.28);
+        --card-border: rgba(255, 255, 255, 0.12);
+      }
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--dark-gradient);
+        background-size: 200% 200%;
+        animation: gradientShift 20s ease infinite;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      @keyframes gradientShift {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-2px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(2px);
+        }
+      }
+
+      #tsparticles {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.1;
+      }
+
+      .glass-morphism {
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
+      }
+
+      @supports not (backdrop-filter: blur(30px)) {
+        .glass-morphism {
+          background: rgba(15, 23, 42, 0.85);
+        }
+      }
+
+      .background-pattern {
+        position: fixed;
+        inset: 0;
+        opacity: 0.03;
+        background-image: radial-gradient(
+          circle at 30px 30px,
+          rgba(255, 255, 255, 0.1) 1.5px,
+          transparent 0
+        );
+        background-size: 60px 60px;
+        z-index: -1;
+      }
+
+      .parcel-card {
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--card-border);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .parcel-card:hover {
+        transform: translateY(-2px) scale(1.003);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      #results {
+        will-change: opacity, transform;
+      }
+
+      .parcel-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(37, 99, 235, 0.6),
+          transparent
+        );
+        transition: left 0.7s ease;
+      }
+
+      .parcel-card:hover::before {
+        left: 100%;
+      }
+
+      .stats-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .form-input {
+        transition: all 0.4s ease;
+        background: rgba(15, 23, 42, 0.22);
+        backdrop-filter: blur(12px);
+        font-size: 16px;
+      }
+
+      .form-input:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+        background: rgba(15, 23, 42, 0.38);
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+      }
+
+      .form-input.error {
+        border-color: #dc2626 !important;
+        animation: shake 0.7s ease-in-out;
+      }
+
+      .btn-primary {
+        background: var(--primary-gradient);
+        background-size: 200% 200%;
+        animation: gradientShift 15s ease infinite;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        min-height: 44px;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35);
+      }
+
+      .btn-primary:active {
+        transform: translateY(-0.5px) scale(0.99);
+      }
+
+      .filter-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+        white-space: nowrap;
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-height: 36px;
+      }
+
+      .filter-btn:hover {
+        border-color: rgba(37, 99, 235, 0.5);
+        color: #2563eb;
+        background: rgba(37, 99, 235, 0.1);
+      }
+
+      .filter-btn.active {
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+      }
+
+      .floating-button {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 50;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .floating-button:hover {
+        transform: scale(1.12) rotate(90deg);
+        box-shadow: 0 12px 30px rgba(37, 99, 235, 0.45);
+      }
+
+      .status-indicator {
+        position: relative;
+      }
+
+      .loading-skeleton {
+        background: linear-gradient(
+          90deg,
+          #1e293b 25%,
+          #334155 50%,
+          #1e293b 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 2s ease-in-out infinite;
+      }
+
+      .notification {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        z-index: 60;
+        transform: translateX(400px);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .notification.show {
+        transform: translateX(0);
+      }
+
+      .progress-bar {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 1.5px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #2563eb);
+        border-radius: 1.5px;
+        transition: width 0.6s ease;
+        position: relative;
+      }
+
+      .progress-fill::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        animation: shimmer 2.5s infinite;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.3),
+          rgba(147, 51, 234, 0.3)
+        );
+        border-radius: 10px;
+      }
+
+      @media (max-width: 768px) {
+        .glass-morphism {
+          margin: 0.75rem;
+        }
+
+        .floating-button {
+          bottom: 1rem;
+          right: 1rem;
+          width: 52px;
+          height: 52px;
+        }
+
+        .notification {
+          top: 1rem;
+          right: 1rem;
+          left: 1rem;
+        }
+
+        .filter-btn {
+          padding: 0.6rem 1rem;
+          font-size: 0.75rem;
+        }
+
+        .form-input {
+          min-height: 44px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex items-center justify-center p-4">
+    <div id="tsparticles"></div>
+    <div class="background-pattern"></div>
+
+    <div
+      class="glass-morphism rounded-3xl w-full max-w-5xl overflow-hidden animate-fade-in shadow-2xl flex flex-col md:flex-row min-h-[600px]"
+    >
+      <!-- Left Sidebar -->
+      <aside
+        class="bg-gradient-to-br from-primary-600/10 to-purple-600/10 backdrop-blur-xl border-r border-surface-600/30 p-6 md:w-72 flex-shrink-0"
+      >
+        <div class="flex items-center gap-3 mb-8">
+          <div
+            class="bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl p-3 animate-bounce-gentle shadow-lg"
+          >
+            <span class="material-symbols-outlined text-white text-2xl"
+              >local_shipping</span
+            >
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Parcel Tracker</h1>
+            <p class="text-surface-300 text-xs">Track shipments</p>
+          </div>
+        </div>
+
+        <div id="statsContainer" class="hidden space-y-3 mb-6">
+          <div
+            class="stats-card p-4 bg-gradient-to-br from-emerald-500/20 to-green-600/20 rounded-xl border border-emerald-400/20"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <div
+                  class="text-2xl font-bold text-emerald-400"
+                  id="readyCount"
+                >
+                  0
+                </div>
+                <div class="text-xs text-emerald-300 mt-1">Ready</div>
+              </div>
+              <span
+                class="material-symbols-outlined text-emerald-400 text-3xl opacity-50"
+                >inventory_2</span
+              >
+            </div>
+          </div>
+          <div
+            class="stats-card p-4 bg-gradient-to-br from-violet-500/20 to-purple-600/20 rounded-xl border border-violet-400/20"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <div
+                  class="text-2xl font-bold text-violet-400"
+                  id="warehouseCount"
+                >
+                  0
+                </div>
+                <div class="text-xs text-violet-300 mt-1">Warehouse</div>
+              </div>
+              <span
+                class="material-symbols-outlined text-violet-400 text-3xl opacity-50"
+                >warehouse</span
+              >
+            </div>
+          </div>
+          <div
+            class="stats-card p-4 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-xl border border-blue-400/20"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold text-blue-400" id="transitCount">
+                  0
+                </div>
+                <div class="text-xs text-blue-300 mt-1">Sent to Georgia</div>
+              </div>
+              <span
+                class="material-symbols-outlined text-blue-400 text-3xl opacity-50"
+                >local_shipping</span
+              >
+            </div>
+          </div>
+          <div
+            class="stats-card p-4 bg-gradient-to-br from-purple-500/20 to-indigo-600/20 rounded-xl border border-purple-400/20"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold text-purple-400" id="totalCount">
+                  0
+                </div>
+                <div class="text-xs text-purple-300 mt-1">Total Parcels</div>
+              </div>
+              <span
+                class="material-symbols-outlined text-purple-400 text-3xl opacity-50"
+                >apps</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div id="loginPrompt" class="space-y-3">
+          <div
+            class="p-4 bg-surface-700/30 rounded-xl border border-surface-600/30"
+          >
+            <div class="flex items-center gap-2 text-surface-300 mb-2">
+              <span class="material-symbols-outlined text-sm">info</span>
+              <span class="text-xs font-medium">Quick Start</span>
+            </div>
+            <p class="text-surface-400 text-xs leading-relaxed">
+              Enter your credentials to access your parcel tracking dashboard.
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-6 bg-surface-800/50 overflow-y-auto">
+        <div class="mb-6">
+          <h2 id="greeting" class="text-2xl font-bold text-surface-200 mb-2">
+            Welcome Back
+          </h2>
+          <p class="text-surface-400 text-sm">
+            Sign in to access your tracking dashboard
+          </p>
+        </div>
+
+        <form id="trackingForm" class="space-y-4 mb-6">
+          <div class="relative group">
+            <label
+              for="email"
+              class="block text-xs font-medium text-surface-400 mb-2 ml-1"
+            >
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autocomplete="username"
+              class="form-input w-full px-4 py-3.5 pr-11 text-surface-200 bg-surface-700/50 border border-surface-600 rounded-xl font-normal backdrop-blur-sm"
+              placeholder="your@email.com"
+            />
+            <div
+              class="absolute right-4 top-[38px] text-surface-400 pointer-events-none transition-colors duration-200 group-focus-within:text-primary-500"
+            >
+              <span class="material-symbols-outlined text-lg">email</span>
+            </div>
+            <div
+              class="error-message hidden text-red-400 text-xs mt-1.5 flex items-center gap-1.5 ml-1"
+            >
+              <span class="material-symbols-outlined text-xs">error</span>
+              <span></span>
+            </div>
+          </div>
+
+          <div class="relative group">
+            <label
+              for="password"
+              class="block text-xs font-medium text-surface-400 mb-2 ml-1"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              autocomplete="current-password"
+              class="form-input w-full px-4 py-3.5 pr-11 text-surface-200 bg-surface-700/50 border border-surface-600 rounded-xl font-normal backdrop-blur-sm"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              id="togglePassword"
+              class="absolute right-4 top-[38px] text-surface-400 hover:text-primary-500 transition-all duration-200 z-10 hover:scale-110"
+            >
+              <span class="material-symbols-outlined text-lg" id="passwordIcon"
+                >visibility_off</span
+              >
+            </button>
+            <div
+              class="error-message hidden text-red-400 text-xs mt-1.5 flex items-center gap-1.5 ml-1"
+            >
+              <span class="material-symbols-outlined text-xs">error</span>
+              <span></span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            id="submitBtn"
+            class="btn-primary w-full py-3.5 px-5 rounded-xl text-white font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:opacity-70 disabled:cursor-not-allowed relative z-10"
+          >
+            <span id="btnText" class="relative z-10">Sign In</span>
+            <div
+              id="btnLoader"
+              class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300"
+            >
+              <div
+                class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></div>
+            </div>
+          </button>
+        </form>
+
+        <div
+          id="userInfo"
+          class="hidden mb-6 p-4 bg-surface-700/30 rounded-xl border border-surface-600/30"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center"
+              >
+                <span class="material-symbols-outlined text-white text-lg"
+                  >person</span
+                >
+              </div>
+              <div>
+                <div class="text-xs text-surface-400">Logged in as</div>
+                <div
+                  id="userEmail"
+                  class="text-sm font-medium text-surface-200"
+                ></div>
+              </div>
+            </div>
+            <button
+              id="logoutBtn"
+              class="text-surface-400 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-700/50 text-xs font-medium flex items-center gap-1.5"
+            >
+              <span class="material-symbols-outlined text-sm">logout</span>
+              Logout
+            </button>
+          </div>
+        </div>
+
+        <div id="searchContainer" class="hidden mb-6">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary-500 text-lg"
+              >filter_list</span
+            >
+            <h3 class="text-sm font-semibold text-surface-300">
+              Filter Parcels
+            </h3>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="Ready to Pickup">
+              Ready
+            </button>
+            <button class="filter-btn" data-filter="In the Warehouse">
+              Warehouse
+            </button>
+            <button class="filter-btn" data-filter="Sent to Georgia">
+              Sent
+            </button>
+            <button class="filter-btn" data-filter="In transit">Transit</button>
+            <button class="filter-btn" data-filter="Not Arrived">
+              Pending
+            </button>
+          </div>
+        </div>
+
+        <div
+          id="results"
+          class="space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2"
+        >
+          <div id="loadingPlaceholder" class="hidden space-y-4">
+            <div class="loading-skeleton h-22 rounded-3xl"></div>
+            <div class="loading-skeleton h-22 rounded-3xl"></div>
+            <div class="loading-skeleton h-22 rounded-3xl"></div>
+          </div>
+          <div
+            id="emptyState"
+            class="hidden text-center py-14 animate-fade-in-up"
+          >
+            <div
+              class="mx-auto w-22 h-22 bg-gradient-to-br from-primary-900/25 to-purple-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float"
+            >
+              <span class="material-symbols-outlined text-4xl text-primary-400"
+                >package_2</span
+              >
+            </div>
+            <h3 class="text-lg font-semibold text-surface-300 mb-2.5">
+              No Parcels Yet
+            </h3>
+            <p
+              class="text-surface-400 max-w-xs mx-auto text-sm leading-relaxed"
+            >
+              Enter your credentials to track your shipments.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <button
+      id="refreshBtn"
+      class="floating-button hidden items-center justify-center text-white group"
+    >
+      <span
+        class="material-symbols-outlined text-xl transition-transform duration-400 group-hover:rotate-90"
+        >refresh</span
+      >
+    </button>
+
+    <div id="notification" class="notification">
+      <div
+        class="bg-surface-800/90 backdrop-blur-sm rounded-3xl shadow-xl p-4 border border-surface-600 w-80 max-w-[90vw] animate-scale-in"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="p-2 rounded-xl flex-shrink-0"
+            id="notificationIconContainer"
+          >
+            <span
+              id="notificationIcon"
+              class="material-symbols-outlined text-lg block"
+            ></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div
+              id="notificationTitle"
+              class="font-semibold text-surface-200 text-sm truncate"
+            ></div>
+            <div
+              id="notificationMessage"
+              class="text-xs text-surface-400 mt-1 leading-relaxed break-words"
+            ></div>
+            <div class="progress-bar mt-2 hidden" id="notificationProgress">
+              <div
+                class="progress-fill"
+                id="progressFill"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+          <button
+            id="closeNotification"
+            class="text-surface-400 hover:text-surface-600 transition-colors duration-200 p-1 rounded-lg hover:bg-surface-700 flex-shrink-0"
+          >
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM Elements
+      const form = document.getElementById("trackingForm");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const results = document.getElementById("results");
+      const loadingPlaceholder = document.getElementById("loadingPlaceholder");
+      const emptyState = document.getElementById("emptyState");
+      const submitBtn = document.getElementById("submitBtn");
+      const btnText = document.getElementById("btnText");
+      const btnLoader = document.getElementById("btnLoader");
+      const togglePassword = document.getElementById("togglePassword");
+      const passwordIcon = document.getElementById("passwordIcon");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const searchContainer = document.getElementById("searchContainer");
+      const statsContainer = document.getElementById("statsContainer");
+      const loginPrompt = document.getElementById("loginPrompt");
+      const notification = document.getElementById("notification");
+      const closeNotification = document.getElementById("closeNotification");
+
+      // State
+      let allParcels = [];
+      let filteredParcels = [];
+      let currentFilter = "all";
+      let lastRefreshTime = null;
+
+      function getGreeting() {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good Morning";
+        if (hour < 18) return "Good Afternoon";
+        return "Good Evening";
+      }
+
+      // Validation
+      function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function validatePassword(password) {
+        return password.length >= 6;
+      }
+
+      function showFieldError(field, message) {
+        const input = field === "email" ? emailInput : passwordInput;
+        const errorDiv = input.parentElement.querySelector(".error-message");
+        const errorSpan = errorDiv.querySelector("span:last-child");
+        input.classList.add("error");
+        errorSpan.textContent = message;
+        errorDiv.classList.remove("hidden");
+        input.addEventListener(
+          "input",
+          () => {
+            input.classList.remove("error");
+            errorDiv.classList.add("hidden");
+          },
+          { once: true }
+        );
+      }
+
+      function clearFieldErrors() {
+        document
+          .querySelectorAll(".form-input")
+          .forEach((input) => input.classList.remove("error"));
+        document
+          .querySelectorAll(".error-message")
+          .forEach((error) => error.classList.add("hidden"));
+      }
+
+      // UI Functions
+      function setLoadingState(isLoading) {
+        submitBtn.disabled = isLoading;
+        btnText.style.opacity = isLoading ? "0" : "1";
+        btnLoader.style.opacity = isLoading ? "1" : "0";
+        if (isLoading) {
+          results.innerHTML = "";
+          loadingPlaceholder.classList.remove("hidden");
+          emptyState.classList.add("hidden");
+        } else {
+          loadingPlaceholder.classList.add("hidden");
+        }
+      }
+
+      function showNotification(
+        title,
+        message,
+        icon = "info",
+        type = "info",
+        duration = 4000,
+        showProgress = false
+      ) {
+        const typeStyles = {
+          success: "bg-emerald-900/25 text-emerald-400",
+          error: "bg-red-900/25 text-red-400",
+          warning: "bg-orange-900/25 text-orange-400",
+          info: "bg-blue-900/25 text-blue-400",
+        };
+
+        document.getElementById("notificationTitle").textContent = title;
+        document.getElementById("notificationMessage").textContent = message;
+        document.getElementById("notificationIcon").textContent = icon;
+        document.getElementById(
+          "notificationIconContainer"
+        ).className = `p-1.5 rounded-2xl ${
+          typeStyles[type] || typeStyles.info
+        }`;
+
+        const progressBar = document.getElementById("notificationProgress");
+        const progressFill = document.getElementById("progressFill");
+
+        if (showProgress) {
+          progressBar.classList.remove("hidden");
+          progressFill.style.transition = `width ${duration / 1000}s linear`;
+          progressFill.style.width = "100%";
+          setTimeout(() => (progressFill.style.width = "0%"), 100);
+        } else {
+          progressBar.classList.add("hidden");
+        }
+
+        notification.classList.add("show");
+        setTimeout(() => notification.classList.remove("show"), duration);
+      }
+
+      // Data & Rendering
+      function filterAndDisplayResults() {
+        filteredParcels =
+          currentFilter === "all"
+            ? allParcels
+            : allParcels.filter((item) => item.status === currentFilter);
+
+        results.style.opacity = "0";
+        results.style.transform = "translateY(10px) scale(0.98)";
+        results.style.transition =
+          "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+
+        setTimeout(() => {
+          renderResults(filteredParcels);
+          requestAnimationFrame(() => {
+            results.style.opacity = "1";
+            results.style.transform = "translateY(0) scale(1)";
+          });
+        }, 300);
+      }
+
+      function renderResults(parcels) {
+        results.innerHTML = "";
+        if (parcels.length === 0) {
+          results.innerHTML = renderNoResultsState();
+          return;
+        }
+        emptyState.classList.add("hidden");
+        parcels.forEach((item, index) => {
+          const parcelCard = createParcelCard(item, index);
+          results.appendChild(parcelCard);
+        });
+      }
+
+      function createParcelCard(item, index) {
+        const statusConfig = {
+          "Ready to Pickup": {
+            color: "text-emerald-400",
+            bg: "bg-gradient-to-br from-emerald-900/30",
+            icon: "inventory_2",
+            pulse: "animate-pulse",
+          },
+          "In the Warehouse": {
+            color: "text-purple-400",
+            bg: "bg-gradient-to-br from-purple-900/30",
+            icon: "warehouse",
+            pulse: "",
+          },
+          "Sent to Georgia": {
+            color: "text-blue-400",
+            bg: "bg-gradient-to-br from-blue-900/30",
+            icon: "local_shipping",
+            pulse: "",
+          },
+          "In transit": {
+            color: "text-cyan-400",
+            bg: "bg-gradient-to-br from-cyan-900/30",
+            icon: "flight",
+            pulse: "animate-pulse",
+          },
+          "Not Arrived": {
+            color: "text-yellow-400",
+            bg: "bg-gradient-to-br from-yellow-900/30",
+            icon: "schedule",
+            pulse: "",
+          },
+          Delivered: {
+            color: "text-indigo-400",
+            bg: "bg-gradient-to-br from-indigo-900/30",
+            icon: "task_alt",
+            pulse: "",
+          },
+          Error: {
+            color: "text-red-400",
+            bg: "bg-gradient-to-br from-red-900/30",
+            icon: "error",
+            pulse: "",
+          },
+        };
+
+        const config = statusConfig[item.status] || statusConfig["Not Arrived"];
+        const card = document.createElement("div");
+        card.className =
+          "parcel-card p-3.5 animate-slide-up rounded-2xl border border-surface-600/50 group";
+        card.style.animationDelay = `${index * 30}ms`;
+
+        card.innerHTML = `
+  <div class="flex items-center gap-3">
+    <div class="status-indicator ${config.bg} p-2.5 rounded-xl ${
+          config.pulse
+        } group-hover:scale-105 transition-transform duration-400">
+      <span class="material-symbols-outlined ${config.color} text-xl">${
+          config.icon
+        }</span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex justify-between items-center mb-1">
+        <div class="font-semibold text-surface-200 text-sm truncate pr-2" title="${
+          item.trackingCode || ""
+        }">${item.trackingCode || "No tracking code"}</div>
+        <span class="status-badge ${config.bg} ${
+          config.color
+        } px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap">${
+          item.status || "Unknown"
+        }</span>
+      </div>
+      <p class="text-surface-400 text-xs font-normal">${
+        item.packageName || "No description"
+      }</p>
+    </div>
+    <button class="copy-btn bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-all hover:scale-105 flex-shrink-0">
+      <span class="material-symbols-outlined text-sm">content_copy</span>
+    </button>
+  </div>`;
+
+        const copyBtn = card.querySelector(".copy-btn");
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(item.trackingCode || "");
+            showNotification(
+              "Success!",
+              "Tracking code copied.",
+              "content_copy",
+              "success",
+              2500,
+              true
+            );
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = `<span class="material-symbols-outlined text-xs">done</span> Copied!`;
+            copyBtn.classList.add("scale-105");
+            setTimeout(() => {
+              copyBtn.classList.remove("scale-105");
+              copyBtn.innerHTML = originalHTML;
+            }, 2000);
+          } catch (err) {
+            showNotification(
+              "Copy Failed",
+              "Could not copy.",
+              "error",
+              "error"
+            );
+          }
+        });
+
+        return card;
+      }
+
+      function renderNoResultsState() {
+        const message =
+          allParcels.length > 0
+            ? `<h3 class="text-base font-semibold text-surface-300 mb-1.5">No Parcels Found</h3><p class="text-surface-400 text-sm">Try a different filter.</p>`
+            : `<h3 class="text-lg font-semibold text-surface-300 mb-2.5">No Parcels Yet</h3><p class="text-surface-400 max-w-xs mx-auto text-sm leading-relaxed">Enter your credentials to track your shipments.</p>`;
+        const icon = allParcels.length > 0 ? "filter_list_off" : "package_2";
+
+        return `
+        <div class="text-center py-12 animate-fade-in-up">
+          <div class="mx-auto w-18 h-18 bg-gradient-to-br from-orange-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float">
+            <span class="material-symbols-outlined text-3xl text-orange-500">${icon}</span>
+          </div>
+          ${message}
+        </div>`;
+      }
+
+      function updateStats() {
+        const stats = {
+          ready: allParcels.filter((p) => p.status === "Ready to Pickup")
+            .length,
+          warehouse: allParcels.filter((p) => p.status === "In the Warehouse")
+            .length,
+          transit: allParcels.filter(
+            (p) => p.status === "Sent to Georgia" || p.status === "In transit"
+          ).length,
+          total: allParcels.length,
+        };
+
+        animateCounter(document.getElementById("readyCount"), stats.ready);
+        animateCounter(
+          document.getElementById("warehouseCount"),
+          stats.warehouse
+        );
+        animateCounter(document.getElementById("transitCount"), stats.transit);
+        animateCounter(document.getElementById("totalCount"), stats.total);
+      }
+
+      function animateCounter(element, targetValue) {
+        const startValue = parseInt(element.textContent) || 0;
+        if (startValue === targetValue) return;
+
+        const duration = 1000;
+        let startTime = null;
+
+        function step(currentTime) {
+          if (!startTime) startTime = currentTime;
+          const progress = Math.min((currentTime - startTime) / duration, 1);
+          const easedProgress = 1 - Math.pow(1 - progress, 4);
+          const currentValue = Math.floor(
+            easedProgress * (targetValue - startValue) + startValue
+          );
+          element.textContent = currentValue;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      // Form Submit Handler
+      async function handleFormSubmit(event) {
+        event.preventDefault();
+        clearFieldErrors();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        let hasErrors = false;
+
+        if (!validateEmail(email)) {
+          showFieldError("email", "Please enter a valid email address");
+          hasErrors = true;
+        }
+        if (!validatePassword(password)) {
+          showFieldError("password", "Password must be at least 6 characters");
+          hasErrors = true;
+        }
+
+        if (hasErrors) {
+          showNotification(
+            "Validation Error",
+            "Please fix the errors.",
+            "error",
+            "error"
+          );
+          return;
+        }
+
+        setLoadingState(true);
+
+        try {
+          const res = await fetch("/check", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || `Server error: ${res.status}`);
+          }
+
+          lastRefreshTime = Date.now();
+          allParcels = data;
+
+          if (data.length === 0) {
+            showNotification(
+              "No Parcels",
+              "No shipments found.",
+              "info",
+              "warning",
+              4000,
+              true
+            );
+          } else {
+            showNotification(
+              "Success!",
+              `Found ${data.length} parcel(s).`,
+              "check_circle",
+              "success",
+              3000,
+              true
+            );
+            searchContainer.classList.remove("hidden");
+            statsContainer.classList.remove("hidden");
+            loginPrompt.classList.add("hidden");
+            refreshBtn.classList.remove("hidden");
+            refreshBtn.classList.add("flex");
+
+            // Hide login form and show user info
+            form.classList.add("hidden");
+            document.getElementById("userInfo").classList.remove("hidden");
+            document.getElementById("userEmail").textContent = email;
+          }
+
+          filterAndDisplayResults();
+          updateStats();
+        } catch (err) {
+          showNotification(
+            "Request Failed",
+            err.message,
+            "error",
+            "error",
+            5000
+          );
+          results.innerHTML = `
+          <div class="text-center py-12 animate-fade-in-up text-red-500 flex flex-col items-center gap-3.5">
+            <div class="w-14 h-14 bg-red-900/25 rounded-2xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-2xl text-red-500">error</span>
+            </div>
+            <div>
+              <h3 class="font-semibold text-base mb-1.5">Connection Failed</h3>
+              <p class="text-xs">${err.message}</p>
+            </div>
+          </div>`;
+        } finally {
+          setLoadingState(false);
+        }
+      }
+
+      // Initialize
+      function init() {
+        document.getElementById("greeting").textContent = getGreeting();
+        const particlesConfig = {
+          fpsLimit: 120,
+          background: { color: "#0a0a1a" },
+          particles: {
+            number: { value: 150 },
+            color: { value: ["#0ff", "#ff00ff", "#ff0099", "#00ffff"] },
+            shape: { type: ["triangle", "edge"] },
+            opacity: { value: 0.8 },
+            size: { value: { min: 3, max: 6 } },
+            move: {
+              enable: true,
+              speed: { min: 0.5, max: 1.5 },
+              direction: "bottom",
+              random: true,
+              straight: false,
+              outModes: "out",
+            },
+            links: { enable: false },
+          },
+          detectRetina: true,
+        };
+
+        if (window.tsParticles && typeof tsParticles.load === "function") {
+          tsParticles
+            .load("tsparticles", particlesConfig)
+            .catch((err) => console.error("Particles failed to load:", err));
+        }
+
+        form.addEventListener("submit", handleFormSubmit);
+        refreshBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          handleFormSubmit(new Event("submit"));
+        });
+
+        togglePassword.addEventListener("click", () => {
+          const isPassword = passwordInput.type === "password";
+          passwordInput.type = isPassword ? "text" : "password";
+          passwordIcon.textContent = isPassword
+            ? "visibility"
+            : "visibility_off";
+        });
+
+        searchContainer.addEventListener("click", (e) => {
+          const filterBtn = e.target.closest(".filter-btn");
+          if (!filterBtn) return;
+          document
+            .querySelectorAll(".filter-btn")
+            .forEach((b) => b.classList.remove("active"));
+          filterBtn.classList.add("active");
+          currentFilter = filterBtn.dataset.filter;
+          filterAndDisplayResults();
+        });
+
+        closeNotification.addEventListener("click", () =>
+          notification.classList.remove("show")
+        );
+      }
+      // Logout functionality
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        allParcels = [];
+        filteredParcels = [];
+        form.classList.remove("hidden");
+        document.getElementById("userInfo").classList.add("hidden");
+        searchContainer.classList.add("hidden");
+        statsContainer.classList.add("hidden");
+        loginPrompt.classList.remove("hidden");
+        refreshBtn.classList.add("hidden");
+        results.innerHTML = "";
+        // Keep empty state hidden on logout
+        emailInput.value = "";
+        passwordInput.value = "";
+        showNotification(
+          "Logged Out",
+          "Successfully logged out.",
+          "logout",
+          "info",
+          2500,
+          true
+        );
+      });
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    </script>
+  </body>
+</html>

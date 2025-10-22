@@ -13,8 +13,8 @@ app.use(express.static(__dirname));
 
 // Configuration
 const config = {
-  maxConcurrent: 10,
-  timeout: 45000, // Increased timeout for potentially slow network
+  maxConcurrent: 30,
+  timeout: 30000, // Increased timeout for potentially slow network
   retries: 2
 };
 
@@ -65,10 +65,10 @@ cluster = await Cluster.launch({
       }, code, token);
 
       if (!response?.Data?.Rows?.length) {
-        return { trackingCode: code, status: "Not Arrived" };
+        return { trackingCode: code, hasRsData: false };
       }
       
-      const result = { trackingCode: code, status: "In transit" };
+      const result = { trackingCode: code, hasRsData: true, status: "In Georgia (Processing)" };
 
       response.Data.Fields.forEach((field, i) => {
         if (!["ID", "GR_ID", "UN_ID"].includes(field)) {
@@ -99,8 +99,8 @@ const parseShipments = async (page, url, defaultStatus) => {
         return [];
     });
 
-    return await page.$$eval(parcelSelector, (rows, status) => {
-      return rows.slice(0, 10).map(row => {
+return await page.$$eval(parcelSelector, (rows, status) => {
+      return rows.map(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length < 2) return null;
 
@@ -197,12 +197,20 @@ const receivedShipments = await parseShipments(
 
     const results = await Promise.all(
       allShipments.map(item => {
-        if (item.status === "В пути") {
+        if (item.status === "Sent to Georgia") {
           return cluster.execute(item.trackingCode)
-            .then(rsData => ({ ...item, ...rsData }))
+            .then(rsData => {
+              if (rsData.hasRsData) {
+                // Has RS.ge data, so it's in Georgia
+                return { ...item, ...rsData, status: "In Georgia (Processing)" };
+              } else {
+                // No RS.ge data yet, still in transit
+                return { ...item, status: "Sent to Georgia" };
+              }
+            })
             .catch(error => ({
               ...item,
-              status: "Ошибка",
+              status: "Error",
               details: error.message
             }));
         }

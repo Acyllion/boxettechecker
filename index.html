@@ -14,11 +14,11 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
       rel="stylesheet"
     />
-	<!-- 🌐 Performance preconnects for Boxette and RS.ge -->
-<link rel="preconnect" href="https://profile1.boxette.ge" />
-<link rel="preconnect" href="https://www.rs.ge" />
-<link rel="dns-prefetch" href="https://profile1.boxette.ge" />
-<link rel="dns-prefetch" href="https://www.rs.ge" />
+    <!-- 🌐 Performance preconnects for Boxette and RS.ge -->
+    <link rel="preconnect" href="https://profile1.boxette.ge" />
+    <link rel="preconnect" href="https://www.rs.ge" />
+    <link rel="dns-prefetch" href="https://profile1.boxette.ge" />
+    <link rel="dns-prefetch" href="https://www.rs.ge" />
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -957,7 +957,7 @@
             icon: "local_shipping",
             pulse: "",
           },
-"In Georgia (Processing)": {
+          "In Georgia (Processing)": {
             color: "text-cyan-400",
             bg: "bg-transparent border-2 border-cyan-400/50",
             icon: "flight_land",
@@ -1072,8 +1072,10 @@
             .length,
           warehouse: allParcels.filter((p) => p.status === "In the Warehouse")
             .length,
-transit: allParcels.filter(
-            (p) => p.status === "Sent to Georgia" || p.status === "In Georgia (Processing)"
+          transit: allParcels.filter(
+            (p) =>
+              p.status === "Sent to Georgia" ||
+              p.status === "In Georgia (Processing)"
           ).length,
           total: allParcels.length,
         };

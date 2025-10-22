@@ -14,6 +14,11 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
       rel="stylesheet"
     />
+	<!-- 🌐 Performance preconnects for Boxette and RS.ge -->
+<link rel="preconnect" href="https://profile1.boxette.ge" />
+<link rel="preconnect" href="https://www.rs.ge" />
+<link rel="dns-prefetch" href="https://profile1.boxette.ge" />
+<link rel="dns-prefetch" href="https://www.rs.ge" />
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -683,7 +688,9 @@
             <button class="filter-btn" data-filter="Sent to Georgia">
               Sent
             </button>
-            <button class="filter-btn" data-filter="In transit">Transit</button>
+            <button class="filter-btn" data-filter="In Georgia (Processing)">
+              In Georgia
+            </button>
             <button class="filter-btn" data-filter="Not Arrived">
               Pending
             </button>
@@ -950,10 +957,10 @@
             icon: "local_shipping",
             pulse: "",
           },
-          "In transit": {
+"In Georgia (Processing)": {
             color: "text-cyan-400",
-            bg: "bg-gradient-to-br from-cyan-900/30",
-            icon: "flight",
+            bg: "bg-transparent border-2 border-cyan-400/50",
+            icon: "flight_land",
             pulse: "animate-pulse",
           },
           "Not Arrived": {
@@ -1065,8 +1072,8 @@
             .length,
           warehouse: allParcels.filter((p) => p.status === "In the Warehouse")
             .length,
-          transit: allParcels.filter(
-            (p) => p.status === "Sent to Georgia" || p.status === "In transit"
+transit: allParcels.filter(
+            (p) => p.status === "Sent to Georgia" || p.status === "In Georgia (Processing)"
           ).length,
           total: allParcels.length,
         };

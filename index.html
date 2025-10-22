@@ -187,6 +187,19 @@
         z-index: -1;
       }
 
+      #mainContent {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100%;
+      }
+
+      #mainContent.logged-in {
+        display: block;
+        align-items: unset;
+        justify-content: unset;
+      }
+
       .parcel-card {
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         background: var(--card-bg);
@@ -444,7 +457,8 @@
     >
       <!-- Left Sidebar -->
       <aside
-        class="bg-gradient-to-br from-primary-600/10 to-purple-600/10 backdrop-blur-xl border-r border-surface-600/30 p-6 md:w-72 flex-shrink-0"
+        id="sidebar"
+        class="hidden bg-gradient-to-br from-primary-600/10 to-purple-600/10 backdrop-blur-xl border-r border-surface-600/30 p-6 md:w-72 flex-shrink-0"
       >
         <div class="flex items-center gap-3 mb-8">
           <div
@@ -532,199 +546,201 @@
             </div>
           </div>
         </div>
-
-        <div id="loginPrompt" class="space-y-3">
-          <div
-            class="p-4 bg-surface-700/30 rounded-xl border border-surface-600/30"
-          >
-            <div class="flex items-center gap-2 text-surface-300 mb-2">
-              <span class="material-symbols-outlined text-sm">info</span>
-              <span class="text-xs font-medium">Quick Start</span>
-            </div>
-            <p class="text-surface-400 text-xs leading-relaxed">
-              Enter your credentials to access your parcel tracking dashboard.
-            </p>
-          </div>
-        </div>
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 p-6 bg-surface-800/50 overflow-y-auto">
-        <div class="mb-6">
-          <h2 id="greeting" class="text-2xl font-bold text-surface-200 mb-2">
-            Welcome Back
-          </h2>
-          <p class="text-surface-400 text-sm">
-            Sign in to access your tracking dashboard
-          </p>
-        </div>
-
-        <form id="trackingForm" class="space-y-4 mb-6">
-          <div class="relative group">
-            <label
-              for="email"
-              class="block text-xs font-medium text-surface-400 mb-2 ml-1"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autocomplete="username"
-              class="form-input w-full px-4 py-3.5 pr-11 text-surface-200 bg-surface-700/50 border border-surface-600 rounded-xl font-normal backdrop-blur-sm"
-              placeholder="your@email.com"
-            />
-            <div
-              class="absolute right-4 top-[38px] text-surface-400 pointer-events-none transition-colors duration-200 group-focus-within:text-primary-500"
-            >
-              <span class="material-symbols-outlined text-lg">email</span>
-            </div>
-            <div
-              class="error-message hidden text-red-400 text-xs mt-1.5 flex items-center gap-1.5 ml-1"
-            >
-              <span class="material-symbols-outlined text-xs">error</span>
-              <span></span>
-            </div>
-          </div>
-
-          <div class="relative group">
-            <label
-              for="password"
-              class="block text-xs font-medium text-surface-400 mb-2 ml-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              autocomplete="current-password"
-              class="form-input w-full px-4 py-3.5 pr-11 text-surface-200 bg-surface-700/50 border border-surface-600 rounded-xl font-normal backdrop-blur-sm"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              id="togglePassword"
-              class="absolute right-4 top-[38px] text-surface-400 hover:text-primary-500 transition-all duration-200 z-10 hover:scale-110"
-            >
-              <span class="material-symbols-outlined text-lg" id="passwordIcon"
-                >visibility_off</span
-              >
-            </button>
-            <div
-              class="error-message hidden text-red-400 text-xs mt-1.5 flex items-center gap-1.5 ml-1"
-            >
-              <span class="material-symbols-outlined text-xs">error</span>
-              <span></span>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            id="submitBtn"
-            class="btn-primary w-full py-3.5 px-5 rounded-xl text-white font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:opacity-70 disabled:cursor-not-allowed relative z-10"
+      <main
+        class="flex-1 p-6 bg-surface-800/50 overflow-y-auto flex items-center justify-center"
+      >
+        <div class="w-full" id="mainContent">
+          <form
+            id="trackingForm"
+            class="space-y-4 mb-6"
+            style="width: 300px; max-width: 90%; margin: 0 auto"
           >
-            <span id="btnText" class="relative z-10">Sign In</span>
-            <div
-              id="btnLoader"
-              class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300"
-            >
-              <div
-                class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
-              ></div>
-            </div>
-          </button>
-        </form>
-
-        <div
-          id="userInfo"
-          class="hidden mb-6 p-4 bg-surface-700/30 rounded-xl border border-surface-600/30"
-        >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center"
+            <div class="relative group">
+              <label
+                for="email"
+                class="block text-xs font-medium text-surface-400 mb-2 ml-1"
               >
-                <span class="material-symbols-outlined text-white text-lg"
-                  >person</span
-                >
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                autocomplete="username"
+                class="form-input w-full px-4 py-3.5 text-surface-200 bg-surface-700/50 border border-surface-600 rounded-xl font-normal backdrop-blur-sm"
+                placeholder="your@email.com"
+              />
+              <div
+                class="absolute right-4 top-[38px] text-surface-400 pointer-events-none transition-colors duration-200 group-focus-within:text-primary-500"
+              >
+                <span class="material-symbols-outlined text-lg">email</span>
               </div>
-              <div>
-                <div class="text-xs text-surface-400">Logged in as</div>
+              <div
+                class="error-message hidden text-red-400 text-xs mt-1.5 flex items-center gap-1.5 ml-1"
+              >
+                <span class="material-symbols-outlined text-xs">error</span>
+                <span></span>
+              </div>
+            </div>
+
+            <div class="relative group">
+              <label
+                for="password"
+                class="block text-xs font-medium text-surface-400 mb-2 ml-1"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                autocomplete="current-password"
+                class="form-input w-full px-4 py-3.5 text-surface-200 bg-surface-700/50 border border-surface-600 rounded-xl font-normal backdrop-blur-sm"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                id="togglePassword"
+                class="absolute right-4 top-[38px] text-surface-400 hover:text-primary-500 transition-all duration-200 z-10 hover:scale-110"
+              >
+                <span
+                  class="material-symbols-outlined text-lg"
+                  id="passwordIcon"
+                  >visibility_off</span
+                >
+              </button>
+              <div
+                class="error-message hidden text-red-400 text-xs mt-1.5 flex items-center gap-1.5 ml-1"
+              >
+                <span class="material-symbols-outlined text-xs">error</span>
+                <span></span>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              id="submitBtn"
+              class="btn-primary w-full py-3.5 px-5 rounded-xl text-white font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:opacity-70 disabled:cursor-not-allowed relative z-10"
+            >
+              <span id="btnText" class="relative z-10">Sign In</span>
+              <div
+                id="btnLoader"
+                class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300"
+              >
                 <div
-                  id="userEmail"
-                  class="text-sm font-medium text-surface-200"
+                  class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
                 ></div>
               </div>
-            </div>
-            <button
-              id="logoutBtn"
-              class="text-surface-400 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-700/50 text-xs font-medium flex items-center gap-1.5"
-            >
-              <span class="material-symbols-outlined text-sm">logout</span>
-              Logout
             </button>
-          </div>
-        </div>
+          </form>
 
-        <div id="searchContainer" class="hidden mb-6">
-          <div class="flex items-center gap-2 mb-4">
-            <span class="material-symbols-outlined text-primary-500 text-lg"
-              >filter_list</span
-            >
-            <h3 class="text-sm font-semibold text-surface-300">
-              Filter Parcels
-            </h3>
-          </div>
-          <div class="flex gap-2 flex-wrap">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="Ready to Pickup">
-              Ready
-            </button>
-            <button class="filter-btn" data-filter="In the Warehouse">
-              Warehouse
-            </button>
-            <button class="filter-btn" data-filter="Sent to Georgia">
-              Sent
-            </button>
-            <button class="filter-btn" data-filter="In Georgia (Processing)">
-              In Georgia
-            </button>
-            <button class="filter-btn" data-filter="Not Arrived">
-              Pending
-            </button>
-          </div>
-        </div>
-
-        <div
-          id="results"
-          class="space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2"
-        >
-          <div id="loadingPlaceholder" class="hidden space-y-4">
-            <div class="loading-skeleton h-22 rounded-3xl"></div>
-            <div class="loading-skeleton h-22 rounded-3xl"></div>
-            <div class="loading-skeleton h-22 rounded-3xl"></div>
-          </div>
           <div
-            id="emptyState"
-            class="hidden text-center py-14 animate-fade-in-up"
+            id="userInfo"
+            class="hidden mb-6 p-4 bg-surface-700/30 rounded-xl border border-surface-600/30"
           >
-            <div
-              class="mx-auto w-22 h-22 bg-gradient-to-br from-primary-900/25 to-purple-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float"
-            >
-              <span class="material-symbols-outlined text-4xl text-primary-400"
-                >package_2</span
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center"
+                >
+                  <span class="material-symbols-outlined text-white text-lg"
+                    >person</span
+                  >
+                </div>
+                <div>
+                  <div class="text-xs text-surface-400">Logged in as</div>
+                  <div
+                    id="userEmail"
+                    class="text-sm font-medium text-surface-200"
+                  ></div>
+                </div>
+              </div>
+              <button
+                id="logoutBtn"
+                class="text-surface-400 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-700/50 text-xs font-medium flex items-center gap-1.5"
               >
+                <span class="material-symbols-outlined text-sm">logout</span>
+                Logout
+              </button>
             </div>
-            <h3 class="text-lg font-semibold text-surface-300 mb-2.5">
-              No Parcels Yet
-            </h3>
-            <p
-              class="text-surface-400 max-w-xs mx-auto text-sm leading-relaxed"
+          </div>
+
+          <div id="searchContainer" class="hidden mb-6">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-primary-500 text-lg"
+                >filter_list</span
+              >
+              <h3 class="text-sm font-semibold text-surface-300">
+                Filter Parcels
+              </h3>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button class="filter-btn active" data-filter="all">
+                <span class="material-symbols-outlined text-sm">apps</span>
+                All
+              </button>
+              <button class="filter-btn" data-filter="Ready to Pickup">
+                <span class="material-symbols-outlined text-sm"
+                  >inventory_2</span
+                >
+                Ready
+              </button>
+              <button class="filter-btn" data-filter="In the Warehouse">
+                <span class="material-symbols-outlined text-sm">warehouse</span>
+                Warehouse
+              </button>
+              <button class="filter-btn" data-filter="Sent to Georgia">
+                <span class="material-symbols-outlined text-sm"
+                  >local_shipping</span
+                >
+                Sent
+              </button>
+              <button class="filter-btn" data-filter="In Georgia (Processing)">
+                <span class="material-symbols-outlined text-sm"
+                  >flight_land</span
+                >
+                In Georgia
+              </button>
+              <button class="filter-btn" data-filter="Not Arrived">
+                <span class="material-symbols-outlined text-sm">schedule</span>
+                Pending
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="results"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2"
+          >
+            <div id="loadingPlaceholder" class="hidden col-span-full space-y-4">
+              <div class="loading-skeleton h-48 rounded-2xl"></div>
+              <div class="loading-skeleton h-48 rounded-2xl"></div>
+              <div class="loading-skeleton h-48 rounded-2xl"></div>
+            </div>
+            <div
+              id="emptyState"
+              class="hidden col-span-full text-center py-14 animate-fade-in-up"
             >
-              Enter your credentials to track your shipments.
-            </p>
+              <div
+                class="mx-auto w-22 h-22 bg-gradient-to-br from-primary-900/25 to-purple-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float"
+              >
+                <span
+                  class="material-symbols-outlined text-4xl text-primary-400"
+                  >package_2</span
+                >
+              </div>
+              <h3 class="text-lg font-semibold text-surface-300 mb-2.5">
+                No Parcels Yet
+              </h3>
+              <p
+                class="text-surface-400 max-w-xs mx-auto text-sm leading-relaxed"
+              >
+                Enter your credentials to track your shipments.
+              </p>
+            </div>
           </div>
         </div>
       </main>
@@ -797,7 +813,6 @@
       const refreshBtn = document.getElementById("refreshBtn");
       const searchContainer = document.getElementById("searchContainer");
       const statsContainer = document.getElementById("statsContainer");
-      const loginPrompt = document.getElementById("loginPrompt");
       const notification = document.getElementById("notification");
       const closeNotification = document.getElementById("closeNotification");
 
@@ -806,13 +821,6 @@
       let filteredParcels = [];
       let currentFilter = "all";
       let lastRefreshTime = null;
-
-      function getGreeting() {
-        const hour = new Date().getHours();
-        if (hour < 12) return "Good Morning";
-        if (hour < 18) return "Good Afternoon";
-        return "Good Evening";
-      }
 
       // Validation
       function validateEmail(email) {
@@ -941,82 +949,113 @@
         const statusConfig = {
           "Ready to Pickup": {
             color: "text-emerald-400",
-            bg: "bg-gradient-to-br from-emerald-900/30",
+            bgGradient: "from-emerald-500/20 to-green-600/20",
+            border: "border-emerald-400/30",
             icon: "inventory_2",
             pulse: "animate-pulse",
+            accentColor: "bg-emerald-500",
           },
           "In the Warehouse": {
-            color: "text-purple-400",
-            bg: "bg-gradient-to-br from-purple-900/30",
+            color: "text-violet-400",
+            bgGradient: "from-violet-500/20 to-purple-600/20",
+            border: "border-violet-400/30",
             icon: "warehouse",
             pulse: "",
+            accentColor: "bg-violet-500",
           },
           "Sent to Georgia": {
             color: "text-blue-400",
-            bg: "bg-gradient-to-br from-blue-900/30",
+            bgGradient: "from-blue-500/20 to-indigo-600/20",
+            border: "border-blue-400/30",
             icon: "local_shipping",
             pulse: "",
+            accentColor: "bg-blue-500",
           },
           "In Georgia (Processing)": {
-            color: "text-cyan-400",
-            bg: "bg-transparent border-2 border-cyan-400/50",
+            color: "text-orange-400",
+            bgGradient: "from-orange-500/20 to-amber-600/20",
+            border: "border-orange-400/30",
             icon: "flight_land",
             pulse: "animate-pulse",
+            accentColor: "bg-orange-500",
           },
           "Not Arrived": {
-            color: "text-yellow-400",
-            bg: "bg-gradient-to-br from-yellow-900/30",
+            color: "text-blue-400",
+            bgGradient: "from-blue-500/20 to-indigo-600/20",
+            border: "border-blue-400/30",
             icon: "schedule",
             pulse: "",
+            accentColor: "bg-blue-500",
           },
           Delivered: {
             color: "text-indigo-400",
-            bg: "bg-gradient-to-br from-indigo-900/30",
+            bgGradient: "from-indigo-500/20 to-blue-600/20",
+            border: "border-indigo-400/30",
             icon: "task_alt",
             pulse: "",
+            accentColor: "bg-indigo-500",
           },
           Error: {
             color: "text-red-400",
-            bg: "bg-gradient-to-br from-red-900/30",
+            bgGradient: "from-red-500/20 to-pink-600/20",
+            border: "border-red-400/30",
             icon: "error",
             pulse: "",
+            accentColor: "bg-red-500",
           },
         };
 
         const config = statusConfig[item.status] || statusConfig["Not Arrived"];
         const card = document.createElement("div");
         card.className =
-          "parcel-card p-3.5 animate-slide-up rounded-2xl border border-surface-600/50 group";
-        card.style.animationDelay = `${index * 30}ms`;
+          "parcel-card p-5 animate-slide-up rounded-2xl border group bg-gradient-to-br backdrop-blur-xl " +
+          config.bgGradient +
+          " " +
+          config.border;
+        card.style.animationDelay = `${index * 50}ms`;
 
         card.innerHTML = `
-  <div class="flex items-center gap-3">
-    <div class="status-indicator ${config.bg} p-2.5 rounded-xl ${
+    <div class="flex flex-col h-full">
+      <!-- Header with Icon and Status -->
+      <div class="flex items-start justify-between mb-4">
+        <div class="status-indicator ${config.accentColor} p-3 rounded-xl ${
           config.pulse
-        } group-hover:scale-105 transition-transform duration-400">
-      <span class="material-symbols-outlined ${config.color} text-xl">${
-          config.icon
-        }</span>
-    </div>
-    <div class="flex-1 min-w-0">
-      <div class="flex justify-between items-center mb-1">
-        <div class="font-semibold text-surface-200 text-sm truncate pr-2" title="${
+        } shadow-lg">
+          <span class="material-symbols-outlined text-white text-2xl">${
+            config.icon
+          }</span>
+        </div>
+        <span class="status-badge ${
+          config.color
+        } bg-surface-800/50 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold border ${
+          config.border
+        }">${item.status || "Unknown"}</span>
+      </div>
+
+      <!-- Tracking Code -->
+      <div class="mb-3">
+        <div class="text-xs text-surface-400 mb-1">Tracking Code</div>
+<div class="font-bold text-white text-lg tracking-wide" title="${
           item.trackingCode || ""
         }">${item.trackingCode || "No tracking code"}</div>
-        <span class="status-badge ${config.bg} ${
-          config.color
-        } px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap">${
-          item.status || "Unknown"
-        }</span>
       </div>
-      <p class="text-surface-400 text-xs font-normal">${
-        item.packageName || "No description"
-      }</p>
-    </div>
-    <button class="copy-btn bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-all hover:scale-105 flex-shrink-0">
-      <span class="material-symbols-outlined text-sm">content_copy</span>
-    </button>
-  </div>`;
+
+<!-- Package Name -->
+      <div class="mb-4 flex-1">
+        <p class="text-surface-300 text-sm font-medium">${
+          item.packageName || "No description"
+        }</p>
+      </div>
+
+      <!-- Accent Line -->
+      <div class="h-1 ${config.accentColor} rounded-full mb-4 opacity-50"></div>
+
+      <!-- Action Button -->
+      <button class="copy-btn w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white py-2.5 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-lg hover:shadow-xl">
+        <span class="material-symbols-outlined text-base">content_copy</span>
+        Copy Tracking Code
+      </button>
+    </div>`;
 
         const copyBtn = card.querySelector(".copy-btn");
         copyBtn.addEventListener("click", async () => {
@@ -1031,7 +1070,7 @@
               true
             );
             const originalHTML = copyBtn.innerHTML;
-            copyBtn.innerHTML = `<span class="material-symbols-outlined text-xs">done</span> Copied!`;
+            copyBtn.innerHTML = `<span class="material-symbols-outlined text-base">done</span> Copied!`;
             copyBtn.classList.add("scale-105");
             setTimeout(() => {
               copyBtn.classList.remove("scale-105");
@@ -1058,12 +1097,12 @@
         const icon = allParcels.length > 0 ? "filter_list_off" : "package_2";
 
         return `
-        <div class="text-center py-12 animate-fade-in-up">
-          <div class="mx-auto w-18 h-18 bg-gradient-to-br from-orange-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float">
-            <span class="material-symbols-outlined text-3xl text-orange-500">${icon}</span>
-          </div>
-          ${message}
-        </div>`;
+    <div class="col-span-full text-center py-12 animate-fade-in-up">
+      <div class="mx-auto w-18 h-18 bg-gradient-to-br from-orange-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float">
+        <span class="material-symbols-outlined text-3xl text-orange-500">${icon}</span>
+      </div>
+      ${message}
+    </div>`;
       }
 
       function updateStats() {
@@ -1178,7 +1217,6 @@
             );
             searchContainer.classList.remove("hidden");
             statsContainer.classList.remove("hidden");
-            loginPrompt.classList.add("hidden");
             refreshBtn.classList.remove("hidden");
             refreshBtn.classList.add("flex");
 
@@ -1186,6 +1224,8 @@
             form.classList.add("hidden");
             document.getElementById("userInfo").classList.remove("hidden");
             document.getElementById("userEmail").textContent = email;
+            document.getElementById("sidebar").classList.remove("hidden");
+            document.getElementById("mainContent").classList.add("logged-in");
           }
 
           filterAndDisplayResults();
@@ -1215,7 +1255,6 @@
 
       // Initialize
       function init() {
-        document.getElementById("greeting").textContent = getGreeting();
         const particlesConfig = {
           fpsLimit: 120,
           background: { color: "#0a0a1a" },
@@ -1279,9 +1318,10 @@
         filteredParcels = [];
         form.classList.remove("hidden");
         document.getElementById("userInfo").classList.add("hidden");
+        document.getElementById("sidebar").classList.add("hidden");
+        document.getElementById("mainContent").classList.remove("logged-in");
         searchContainer.classList.add("hidden");
         statsContainer.classList.add("hidden");
-        loginPrompt.classList.remove("hidden");
         refreshBtn.classList.add("hidden");
         results.innerHTML = "";
         // Keep empty state hidden on logout

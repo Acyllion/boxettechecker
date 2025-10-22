@@ -190,11 +190,9 @@ app.post("/check", async (req, res) => {
       console.log("Login successful!");
     } catch (e) {
       console.error("Login failed:", e.message);
-      return res
-        .status(401)
-        .json({
-          error: "Authentication failed. Please check your email and password.",
-        });
+      return res.status(401).json({
+        error: "Authentication failed. Please check your email and password.",
+      });
     }
 
     // --- If login is successful, proceed to parse all shipment categories ---

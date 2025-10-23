@@ -165,35 +165,28 @@ app.post("/check", async (req, res) => {
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(config.timeout);
 
-    console.log("Navigating to Boxette login page...");
-    await page.goto("https://profile1.boxette.ge/log-in", {
-      waitUntil: "domcontentloaded",
-    });
+console.log("Navigating to Boxette login page...");
+await page.goto("https://profile1.boxette.ge/log-in", {
+  waitUntil: "networkidle2",
+});
 
-    await page.type('input[name="email"]', email);
+await page.waitForSelector('input[name="email"]', { visible: true });
+await page.type('input[name="email"]', email);
     await page.type('input[name="password"]', password);
 
-    console.log("Submitting login form...");
-    await page.click("button[type='submit']");
+console.log("Submitting login form...");
+await Promise.all([
+  page.waitForNavigation({ waitUntil: "networkidle2", timeout: 10000 }),
+  page.click("button[type='submit']")
+]);
 
-    try {
-      console.log("Verifying login success...");
-      await page.waitForNavigation({
-        waitUntil: "domcontentloaded",
-        timeout: 5000,
-      });
-
-      const currentUrl = page.url();
-      if (!currentUrl.includes("/parcels/get-parcel/expected-parcels")) {
-        throw new Error("Login failed - unexpected redirect");
-      }
-      console.log("Login successful!");
-    } catch (e) {
-      console.error("Login failed:", e.message);
-      return res.status(401).json({
-        error: "Authentication failed. Please check your email and password.",
-      });
-    }
+const currentUrl = page.url();
+if (currentUrl.includes("/log-in")) {
+  return res.status(401).json({
+    error: "Authentication failed. Please check your email and password.",
+  });
+}
+console.log("Login successful!");
 
     // --- If login is successful, proceed to parse all shipment categories ---
 
@@ -274,5 +267,5 @@ app.post("/check", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on 192.168.0.104:${3000}`);
+console.log(`Server running on 192.168.0.104:${PORT}`);
 });

@@ -14,7 +14,7 @@ app.use(express.static(__dirname));
 // Configuration
 const config = {
   maxConcurrent: 30,
-  timeout: 30000, // Increased timeout for potentially slow network
+  timeout: 30000,
   retries: 2,
 };
 
@@ -28,8 +28,6 @@ async function initCluster() {
     maxConcurrency: config.maxConcurrent,
     puppeteerOptions: {
       headless: "new",
-      executablePath:
-        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", // <--- add this
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
     timeout: config.timeout,
@@ -118,27 +116,79 @@ const parseShipments = async (page, url, defaultStatus) => {
       return [];
     });
 
-    return await page.$$eval(
-      parcelSelector,
-      (rows, status) => {
-        return rows
-          .map((row) => {
-            const cells = row.querySelectorAll("td");
-            if (cells.length < 2) return null;
+    // Get all parcel rows
+    const rows = await page.$$(parcelSelector);
+    const parcels = [];
 
-            const code = cells[1].querySelector("span")?.textContent?.trim();
-            if (!code || !/^[A-Z0-9]{6,}$/i.test(code)) return null;
+    console.log(`Found ${rows.length} parcels, extracting descriptions...`);
 
-            return {
-              trackingCode: code,
-              packageName: "Parcel",
-              status: status,
-            };
-          })
-          .filter(Boolean);
-      },
-      defaultStatus
-    );
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        // Extract tracking code from the row first
+        const trackingCode = await rows[i].$eval(
+          'td:nth-child(2) span',
+          (el) => el.textContent.trim()
+        ).catch(() => null);
+
+        if (!trackingCode || !/^[A-Z0-9]{6,}$/i.test(trackingCode)) {
+          console.log(`Skipping row ${i + 1} - invalid tracking code`);
+          continue;
+        }
+
+        // Click on the row to open modal
+        await rows[i].click();
+        
+        // Reduced wait time for modal
+        await new Promise(resolve => setTimeout(resolve, 250));
+
+        // Extract description from modal
+        const description = await page.evaluate(() => {
+          const lis = Array.from(document.querySelectorAll('li'));
+          
+          const descLi = lis.find(li => {
+            const flexCol = li.querySelector('div.flex.flex-col');
+            if (flexCol) {
+              const p = flexCol.querySelector('p.text-sm.font-semibold.text-black');
+              if (p) {
+                return p.textContent.trim() === 'Описание';
+              }
+            }
+            return false;
+          });
+          
+          if (descLi) {
+            const flexCol = descLi.querySelector('div.flex.flex-col');
+            const descP = flexCol.querySelector('p.text-sm.font-medium');
+            if (descP) {
+              return descP.textContent.trim();
+            }
+          }
+          return 'Parcel';
+        });
+
+        parcels.push({
+          trackingCode: trackingCode,
+          packageName: description || 'Parcel',
+          status: defaultStatus,
+        });
+
+        // Close modal with reduced wait
+        await page.click('div.flex.h-10.w-10.cursor-pointer');
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        console.log(`✓ Extracted: ${trackingCode} - ${description}`);
+
+      } catch (error) {
+        console.error(`Error extracting parcel ${i + 1}:`, error.message);
+        // Try to close modal if it's open
+        try {
+          await page.click('div.flex.h-10.w-10.cursor-pointer').catch(() => {});
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch {}
+      }
+    }
+
+    return parcels;
   } catch (error) {
     console.error(`Error parsing shipments from ${url}:`, error.message);
     return [];
@@ -157,36 +207,34 @@ app.post("/check", async (req, res) => {
     console.log("Launching browser for Boxette login...");
     browser = await puppeteer.launch({
       headless: "new",
-      executablePath:
-        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", // <--- add this
       args: ["--no-sandbox"],
     });
 
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(config.timeout);
 
-console.log("Navigating to Boxette login page...");
-await page.goto("https://profile1.boxette.ge/log-in", {
-  waitUntil: "networkidle2",
-});
+    console.log("Navigating to Boxette login page...");
+    await page.goto("https://profile1.boxette.ge/log-in", {
+      waitUntil: "networkidle2",
+    });
 
-await page.waitForSelector('input[name="email"]', { visible: true });
-await page.type('input[name="email"]', email);
+    await page.waitForSelector('input[name="email"]', { visible: true });
+    await page.type('input[name="email"]', email);
     await page.type('input[name="password"]', password);
 
-console.log("Submitting login form...");
-await Promise.all([
-  page.waitForNavigation({ waitUntil: "networkidle2", timeout: 10000 }),
-  page.click("button[type='submit']")
-]);
+    console.log("Submitting login form...");
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle2", timeout: 10000 }),
+      page.click("button[type='submit']")
+    ]);
 
-const currentUrl = page.url();
-if (currentUrl.includes("/log-in")) {
-  return res.status(401).json({
-    error: "Authentication failed. Please check your email and password.",
-  });
-}
-console.log("Login successful!");
+    const currentUrl = page.url();
+    if (currentUrl.includes("/log-in")) {
+      return res.status(401).json({
+        error: "Authentication failed. Please check your email and password.",
+      });
+    }
+    console.log("Login successful!");
 
     // --- If login is successful, proceed to parse all shipment categories ---
 
@@ -267,5 +315,5 @@ console.log("Login successful!");
 });
 
 app.listen(PORT, () => {
-console.log(`Server running on 192.168.0.104:${PORT}`);
+  console.log(`Server running on 192.168.0.104:${PORT}`);
 });

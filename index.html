@@ -14,11 +14,6 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
       rel="stylesheet"
     />
-    <!-- 🌐 Performance preconnects for Boxette and RS.ge -->
-    <link rel="preconnect" href="https://profile1.boxette.ge" />
-    <link rel="preconnect" href="https://www.rs.ge" />
-    <link rel="dns-prefetch" href="https://profile1.boxette.ge" />
-    <link rel="dns-prefetch" href="https://www.rs.ge" />
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -724,9 +719,9 @@
               id="emptyState"
               class="hidden col-span-full text-center py-14 animate-fade-in-up"
             >
-              <div
-                class="mx-auto w-22 h-22 bg-gradient-to-br from-primary-900/25 to-purple-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float"
-              >
+<div
+  class="mx-auto w-20 h-20 bg-gradient-to-br from-primary-900/25 to-purple-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float"
+>
                 <span
                   class="material-symbols-outlined text-4xl text-primary-400"
                   >package_2</span
@@ -761,10 +756,10 @@
         class="bg-surface-800/90 backdrop-blur-sm rounded-3xl shadow-xl p-4 border border-surface-600 w-80 max-w-[90vw] animate-scale-in"
       >
         <div class="flex items-start gap-3">
-          <div
-            class="p-2 rounded-xl flex-shrink-0"
-            id="notificationIconContainer"
-          >
+<div
+  class="p-1.5 rounded-xl flex-shrink-0"
+  id="notificationIconContainer"
+>
             <span
               id="notificationIcon"
               class="material-symbols-outlined text-lg block"
@@ -1017,7 +1012,7 @@
         card.innerHTML = `
     <div class="flex flex-col h-full">
       <!-- Header with Icon and Status -->
-      <div class="flex items-start justify-between mb-4">
+<div class="flex items-start justify-between gap-4 mb-4">
         <div class="status-indicator ${config.accentColor} p-3 rounded-xl ${
           config.pulse
         } shadow-lg">
@@ -1098,7 +1093,7 @@
 
         return `
     <div class="col-span-full text-center py-12 animate-fade-in-up">
-      <div class="mx-auto w-18 h-18 bg-gradient-to-br from-orange-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float">
+<div class="mx-auto w-20 h-20 bg-gradient-to-br from-orange-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float">
         <span class="material-symbols-outlined text-3xl text-orange-500">${icon}</span>
       </div>
       ${message}
@@ -1240,7 +1235,7 @@
           );
           results.innerHTML = `
           <div class="text-center py-12 animate-fade-in-up text-red-500 flex flex-col items-center gap-3.5">
-            <div class="w-14 h-14 bg-red-900/25 rounded-2xl flex items-center justify-center">
+<div class="w-20 h-20 bg-red-900/25 rounded-2xl flex items-center justify-center">
               <span class="material-symbols-outlined text-2xl text-red-500">error</span>
             </div>
             <div>
@@ -1277,11 +1272,10 @@
           detectRetina: true,
         };
 
-        if (window.tsParticles && typeof tsParticles.load === "function") {
-          tsParticles
-            .load("tsparticles", particlesConfig)
-            .catch((err) => console.error("Particles failed to load:", err));
-        }
+if (typeof tsParticles !== 'undefined' && tsParticles.load) {
+  tsParticles.load("tsparticles", particlesConfig)
+    .catch((err) => console.warn("Particles failed to load:", err));
+}
 
         form.addEventListener("submit", handleFormSubmit);
         refreshBtn.addEventListener("click", (e) => {

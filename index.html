@@ -719,9 +719,9 @@
               id="emptyState"
               class="hidden col-span-full text-center py-14 animate-fade-in-up"
             >
-<div
-  class="mx-auto w-20 h-20 bg-gradient-to-br from-primary-900/25 to-purple-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float"
->
+              <div
+                class="mx-auto w-20 h-20 bg-gradient-to-br from-primary-900/25 to-purple-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float"
+              >
                 <span
                   class="material-symbols-outlined text-4xl text-primary-400"
                   >package_2</span
@@ -756,10 +756,10 @@
         class="bg-surface-800/90 backdrop-blur-sm rounded-3xl shadow-xl p-4 border border-surface-600 w-80 max-w-[90vw] animate-scale-in"
       >
         <div class="flex items-start gap-3">
-<div
-  class="p-1.5 rounded-xl flex-shrink-0"
-  id="notificationIconContainer"
->
+          <div
+            class="p-1.5 rounded-xl flex-shrink-0"
+            id="notificationIconContainer"
+          >
             <span
               id="notificationIcon"
               class="material-symbols-outlined text-lg block"
@@ -824,6 +824,17 @@
 
       function validatePassword(password) {
         return password.length >= 6;
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return "";
+        try {
+          const date = new Date(dateString);
+          const options = { month: "short", day: "numeric", year: "numeric" };
+          return date.toLocaleDateString("en-US", options);
+        } catch {
+          return dateString;
+        }
       }
 
       function showFieldError(field, message) {
@@ -1012,7 +1023,7 @@
         card.innerHTML = `
     <div class="flex flex-col h-full">
       <!-- Header with Icon and Status -->
-<div class="flex items-start justify-between gap-4 mb-4">
+      <div class="flex items-start justify-between gap-4 mb-4">
         <div class="status-indicator ${config.accentColor} p-3 rounded-xl ${
           config.pulse
         } shadow-lg">
@@ -1030,16 +1041,26 @@
       <!-- Tracking Code -->
       <div class="mb-3">
         <div class="text-xs text-surface-400 mb-1">Tracking Code</div>
-<div class="font-bold text-white text-lg tracking-wide" title="${
+        <div class="font-bold text-white text-lg tracking-wide" title="${
           item.trackingCode || ""
         }">${item.trackingCode || "No tracking code"}</div>
       </div>
 
-<!-- Package Name -->
+      <!-- Package Name -->
       <div class="mb-4 flex-1">
         <p class="text-surface-300 text-sm font-medium">${
           item.packageName || "No description"
         }</p>
+        ${
+          item.estimatedArrival
+            ? `
+        <div class="flex items-center gap-1.5 mt-2 text-xs text-surface-400">
+          <span class="material-symbols-outlined text-sm">schedule</span>
+          <span>ETA: ${formatDate(item.estimatedArrival)}</span>
+        </div>
+        `
+            : ""
+        }
       </div>
 
       <!-- Accent Line -->
@@ -1272,10 +1293,11 @@
           detectRetina: true,
         };
 
-if (typeof tsParticles !== 'undefined' && tsParticles.load) {
-  tsParticles.load("tsparticles", particlesConfig)
-    .catch((err) => console.warn("Particles failed to load:", err));
-}
+        if (typeof tsParticles !== "undefined" && tsParticles.load) {
+          tsParticles
+            .load("tsparticles", particlesConfig)
+            .catch((err) => console.warn("Particles failed to load:", err));
+        }
 
         form.addEventListener("submit", handleFormSubmit);
         refreshBtn.addEventListener("click", (e) => {

@@ -106,7 +106,6 @@ initCluster().catch((err) =>
 
 const parseShipments = async (page, url, defaultStatus) => {
   try {
-    console.log(`Navigating to ${url} to parse shipments...`);
     await page.goto(url, { waitUntil: "domcontentloaded" });
 
     const parcelSelector = "tbody tr";
@@ -120,74 +119,138 @@ const parseShipments = async (page, url, defaultStatus) => {
     const rows = await page.$$(parcelSelector);
     const parcels = [];
 
-    console.log(`Found ${rows.length} parcels, extracting descriptions...`);
-
     for (let i = 0; i < rows.length; i++) {
       try {
-        // Extract tracking code from the row first
-        const trackingCode = await rows[i].$eval(
-          'td:nth-child(2) span',
-          (el) => el.textContent.trim()
-        ).catch(() => null);
+        // Extract tracking code and estimated arrival from the row
+        const rowData = await rows[i]
+          .evaluate((row) => {
+            const trackingCode = row
+              .querySelector("td:nth-child(2) span")
+              ?.textContent.trim();
 
-        if (!trackingCode || !/^[A-Z0-9]{6,}$/i.test(trackingCode)) {
-          console.log(`Skipping row ${i + 1} - invalid tracking code`);
+            // Extract estimated arrival date - look in all table cells
+            let estimatedArrival = null;
+            const allText = row.textContent;
+
+            // Match pattern like "Ожидаемое прибытие 2025-10-29" or just "2025-10-29"
+            const dateMatch = allText.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+              estimatedArrival = dateMatch[1];
+            }
+
+            return { trackingCode, estimatedArrival };
+          })
+          .catch(() => ({ trackingCode: null, estimatedArrival: null }));
+
+        if (
+          !rowData.trackingCode ||
+          !/^[A-Z0-9]{6,}$/i.test(rowData.trackingCode)
+        ) {
           continue;
         }
 
+        const trackingCode = rowData.trackingCode;
+        const estimatedArrival = rowData.estimatedArrival;
+
         // Click on the row to open modal
         await rows[i].click();
-        
-        // Reduced wait time for modal
-        await new Promise(resolve => setTimeout(resolve, 250));
 
-        // Extract description from modal
-        const description = await page.evaluate(() => {
-          const lis = Array.from(document.querySelectorAll('li'));
-          
-          const descLi = lis.find(li => {
-            const flexCol = li.querySelector('div.flex.flex-col');
-            if (flexCol) {
-              const p = flexCol.querySelector('p.text-sm.font-semibold.text-black');
-              if (p) {
-                return p.textContent.trim() === 'Описание';
+        // Wait for modal to appear with proper selector
+        await page
+          .waitForSelector("p.text-sm.font-semibold.text-black", {
+            timeout: 2000,
+          })
+          .catch(() => {});
+
+        // Additional wait for modal content to fully render
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        // Extract description from modal with retry logic
+        let description = "Parcel";
+        try {
+          description = await page.evaluate(() => {
+            const lis = Array.from(document.querySelectorAll("li"));
+
+            const descLi = lis.find((li) => {
+              const flexCol = li.querySelector("div.flex.flex-col");
+              if (flexCol) {
+                const p = flexCol.querySelector(
+                  "p.text-sm.font-semibold.text-black"
+                );
+                if (p) {
+                  const text = p.textContent.trim();
+                  return text === "Описание" || text.includes("Описание");
+                }
+              }
+              return false;
+            });
+
+            if (descLi) {
+              const flexCol = descLi.querySelector("div.flex.flex-col");
+              const descP = flexCol.querySelector("p.text-sm.font-medium");
+              if (descP) {
+                return descP.textContent.trim();
               }
             }
-            return false;
+            return null;
           });
-          
-          if (descLi) {
-            const flexCol = descLi.querySelector('div.flex.flex-col');
-            const descP = flexCol.querySelector('p.text-sm.font-medium');
-            if (descP) {
-              return descP.textContent.trim();
-            }
+
+          if (!description) {
+            description = "Parcel";
           }
-          return 'Parcel';
-        });
+        } catch (evalError) {
+          description = "Parcel";
+        }
 
         parcels.push({
           trackingCode: trackingCode,
-          packageName: description || 'Parcel',
+          packageName: description,
           status: defaultStatus,
+          estimatedArrival: estimatedArrival,
         });
 
-        // Close modal with reduced wait
-        await page.click('div.flex.h-10.w-10.cursor-pointer');
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Close modal
+        await page.click("div.flex.h-10.w-10.cursor-pointer").catch(() => {});
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-        console.log(`✓ Extracted: ${trackingCode} - ${description}`);
-
+        // Remove this line entirely
       } catch (error) {
         console.error(`Error extracting parcel ${i + 1}:`, error.message);
+        // Add the parcel with default description if extraction failed
+        const rowData = await rows[i]
+          .evaluate((row) => {
+            const trackingCode = row
+              .querySelector("td:nth-child(2) span")
+              ?.textContent.trim();
+            const allText = row.textContent;
+            let estimatedArrival = null;
+            const dateMatch = allText.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+              estimatedArrival = dateMatch[1];
+            }
+            return { trackingCode, estimatedArrival };
+          })
+          .catch(() => ({
+            trackingCode: `Unknown-${i}`,
+            estimatedArrival: null,
+          }));
+
+        parcels.push({
+          trackingCode: rowData.trackingCode,
+          packageName: "Parcel",
+          status: defaultStatus,
+          estimatedArrival: rowData.estimatedArrival,
+        });
+
         // Try to close modal if it's open
         try {
-          await page.click('div.flex.h-10.w-10.cursor-pointer').catch(() => {});
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await page.click("div.flex.h-10.w-10.cursor-pointer").catch(() => {});
+          await new Promise((resolve) => setTimeout(resolve, 200));
         } catch {}
       }
     }
 
+    console.log(`Successfully extracted ${parcels.length} parcels from ${url}`);
     return parcels;
   } catch (error) {
     console.error(`Error parsing shipments from ${url}:`, error.message);
@@ -225,7 +288,7 @@ app.post("/check", async (req, res) => {
     console.log("Submitting login form...");
     await Promise.all([
       page.waitForNavigation({ waitUntil: "networkidle2", timeout: 10000 }),
-      page.click("button[type='submit']")
+      page.click("button[type='submit']"),
     ]);
 
     const currentUrl = page.url();

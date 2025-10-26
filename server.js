@@ -13,9 +13,9 @@ app.use(express.static(__dirname));
 
 // Configuration
 const config = {
-  maxConcurrent: 30,
-  timeout: 30000,
-  retries: 2,
+  maxConcurrent: 80,
+  timeout: 15000,
+  retries: 1,
 };
 
 // Global cluster
@@ -111,7 +111,6 @@ const parseShipments = async (page, url, defaultStatus) => {
     const parcelSelector = "tbody tr";
 
     await page.waitForSelector(parcelSelector, { timeout: 3000 }).catch(() => {
-      console.log(`No parcels found on page: ${url}`);
       return [];
     });
 
@@ -158,7 +157,7 @@ const parseShipments = async (page, url, defaultStatus) => {
         // Wait for modal to appear with proper selector
         await page
           .waitForSelector("p.text-sm.font-semibold.text-black", {
-            timeout: 2000,
+            timeout: 1000,
           })
           .catch(() => {});
 
@@ -217,23 +216,7 @@ const parseShipments = async (page, url, defaultStatus) => {
       } catch (error) {
         console.error(`Error extracting parcel ${i + 1}:`, error.message);
         // Add the parcel with default description if extraction failed
-        const rowData = await rows[i]
-          .evaluate((row) => {
-            const trackingCode = row
-              .querySelector("td:nth-child(2) span")
-              ?.textContent.trim();
-            const allText = row.textContent;
-            let estimatedArrival = null;
-            const dateMatch = allText.match(/(\d{4}-\d{2}-\d{2})/);
-            if (dateMatch) {
-              estimatedArrival = dateMatch[1];
-            }
-            return { trackingCode, estimatedArrival };
-          })
-          .catch(() => ({
-            trackingCode: `Unknown-${i}`,
-            estimatedArrival: null,
-          }));
+
 
         parcels.push({
           trackingCode: rowData.trackingCode,
@@ -245,12 +228,11 @@ const parseShipments = async (page, url, defaultStatus) => {
         // Try to close modal if it's open
         try {
           await page.click("div.flex.h-10.w-10.cursor-pointer").catch(() => {});
-          await new Promise((resolve) => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         } catch {}
       }
     }
 
-    console.log(`Successfully extracted ${parcels.length} parcels from ${url}`);
     return parcels;
   } catch (error) {
     console.error(`Error parsing shipments from ${url}:`, error.message);
@@ -277,19 +259,19 @@ app.post("/check", async (req, res) => {
     await page.setDefaultNavigationTimeout(config.timeout);
 
     console.log("Navigating to Boxette login page...");
-    await page.goto("https://profile1.boxette.ge/log-in", {
-      waitUntil: "networkidle2",
-    });
+await page.goto("https://profile1.boxette.ge/log-in", {
+  waitUntil: "domcontentloaded",
+});
 
     await page.waitForSelector('input[name="email"]', { visible: true });
     await page.type('input[name="email"]', email);
     await page.type('input[name="password"]', password);
 
     console.log("Submitting login form...");
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: "networkidle2", timeout: 10000 }),
-      page.click("button[type='submit']"),
-    ]);
+await Promise.all([
+  page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 8000 }),
+  page.click("button[type='submit']"),
+]);
 
     const currentUrl = page.url();
     if (currentUrl.includes("/log-in")) {
@@ -362,7 +344,6 @@ app.post("/check", async (req, res) => {
       })
     );
 
-    console.log("Finished processing all shipments.");
     res.json(results);
   } catch (error) {
     console.error("An unexpected error occurred:", error);

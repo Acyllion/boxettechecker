@@ -615,6 +615,17 @@
               </div>
             </div>
 
+            <div class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="saveLogin"
+                class="w-4 h-4 rounded border-surface-600 bg-surface-700/50 text-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-offset-0 cursor-pointer"
+              />
+              <label for="saveLogin" class="text-sm text-surface-300 cursor-pointer select-none">
+                Save my login credentials
+              </label>
+            </div>
+
             <button
               type="submit"
               id="submitBtn"
@@ -816,6 +827,7 @@
       let filteredParcels = [];
       let currentFilter = "all";
       let lastRefreshTime = null;
+      const STORAGE_KEY = "parcel_tracker_credentials";
 
       // Validation
       function validateEmail(email) {
@@ -829,11 +841,51 @@
       function formatDate(dateString) {
         if (!dateString) return "";
         try {
-          const date = new Date(dateString);
+          const date = new
+		  Date(dateString);
           const options = { month: "short", day: "numeric", year: "numeric" };
           return date.toLocaleDateString("en-US", options);
         } catch {
           return dateString;
+        }
+      }
+
+      // Credential Storage Functions
+      function saveCredentials(email, password) {
+        try {
+          const credentials = {
+            email: email,
+            password: btoa(password),
+            savedAt: Date.now()
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(credentials));
+        } catch (error) {
+          console.error("Failed to save credentials:", error);
+        }
+      }
+
+      function loadCredentials() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const credentials = JSON.parse(saved);
+            return {
+              email: credentials.email,
+              password: atob(credentials.password),
+              savedAt: credentials.savedAt
+            };
+          }
+        } catch (error) {
+          console.error("Failed to load credentials:", error);
+        }
+        return null;
+      }
+
+      function clearCredentials() {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (error) {
+          console.error("Failed to clear credentials:", error);
         }
       }
 
@@ -1114,7 +1166,7 @@
 
         return `
     <div class="col-span-full text-center py-12 animate-fade-in-up">
-<div class="mx-auto w-20 h-20 bg-gradient-to-br from-orange-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float">
+      <div class="mx-auto w-20 h-20 bg-gradient-to-br from-orange-900/25 rounded-3xl flex items-center justify-center mb-5 animate-float">
         <span class="material-symbols-outlined text-3xl text-orange-500">${icon}</span>
       </div>
       ${message}
@@ -1171,6 +1223,7 @@
 
         const email = emailInput.value.trim();
         const password = passwordInput.value;
+        const saveLogin = document.getElementById("saveLogin").checked;
         let hasErrors = false;
 
         if (!validateEmail(email)) {
@@ -1212,6 +1265,13 @@
 
           lastRefreshTime = Date.now();
           allParcels = data;
+
+          // Save credentials if checkbox is checked
+          if (saveLogin) {
+            saveCredentials(email, password);
+          } else {
+            clearCredentials();
+          }
 
           if (data.length === 0) {
             showNotification(
@@ -1256,7 +1316,7 @@
           );
           results.innerHTML = `
           <div class="text-center py-12 animate-fade-in-up text-red-500 flex flex-col items-center gap-3.5">
-<div class="w-20 h-20 bg-red-900/25 rounded-2xl flex items-center justify-center">
+            <div class="w-20 h-20 bg-red-900/25 rounded-2xl flex items-center justify-center">
               <span class="material-symbols-outlined text-2xl text-red-500">error</span>
             </div>
             <div>
@@ -1271,6 +1331,22 @@
 
       // Initialize
       function init() {
+        // Auto-fill saved credentials
+        const savedCreds = loadCredentials();
+        if (savedCreds) {
+          emailInput.value = savedCreds.email;
+          passwordInput.value = savedCreds.password;
+          document.getElementById("saveLogin").checked = true;
+          showNotification(
+            "Welcome Back",
+            "Your credentials have been loaded.",
+            "login",
+            "info",
+            2500,
+            false
+          );
+        }
+
         const particlesConfig = {
           fpsLimit: 120,
           background: { color: "#0a0a1a" },
@@ -1328,6 +1404,7 @@
           notification.classList.remove("show")
         );
       }
+
       // Logout functionality
       document.getElementById("logoutBtn").addEventListener("click", () => {
         allParcels = [];
@@ -1340,9 +1417,10 @@
         statsContainer.classList.add("hidden");
         refreshBtn.classList.add("hidden");
         results.innerHTML = "";
-        // Keep empty state hidden on logout
         emailInput.value = "";
         passwordInput.value = "";
+        document.getElementById("saveLogin").checked = false;
+        clearCredentials();
         showNotification(
           "Logged Out",
           "Successfully logged out.",

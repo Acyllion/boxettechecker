@@ -79,17 +79,31 @@ async function initCluster() {
         return { trackingCode: code, hasRsData: false };
       }
 
-      const result = {
+    const result = {
         trackingCode: code,
         hasRsData: true,
-        status: "In Georgia (Processing)",
       };
 
+      // Map fields from RS.ge response
       response.Data.Fields.forEach((field, i) => {
         if (!["ID", "GR_ID", "UN_ID"].includes(field)) {
           result[field] = response.Data.Rows[0][i];
         }
       });
+
+      // Determine status based on RS.ge data
+      // Common RS.ge status values: "მზადაა" (Ready), "დამუშავება" (Processing), etc.
+      const rsStatus = result.Status || result.STATUS || result.status || "";
+      const rsStatusLower = rsStatus.toLowerCase();
+      
+      if (rsStatusLower.includes("მზად") || rsStatusLower.includes("ready") || rsStatusLower.includes("ჩაბარება")) {
+        result.status = "Ready to Pickup";
+      } else if (rsStatusLower.includes("დამუშავება") || rsStatusLower.includes("processing")) {
+        result.status = "In Georgia (Processing)";
+      } else {
+        // Default to processing if status is unclear
+        result.status = "In Georgia (Processing)";
+      }
 
       return result;
     } catch (error) {
@@ -283,7 +297,7 @@ await Promise.all([
 
     // --- If login is successful, proceed to parse all shipment categories ---
 
-    const shippedShipments = await parseShipments(
+const shippedShipments = await parseShipments(
       page,
       "https://profile1.boxette.ge/parcels/get-parcel/in-transit",
       "Sent to Georgia"
@@ -301,10 +315,17 @@ await Promise.all([
       "In the Warehouse"
     );
 
+    const arrivedShipments = await parseShipments(
+      page,
+      "https://profile1.boxette.ge/parcels/get-parcel/arrived",
+      "Ready to Pickup"
+    );
+
     const allShipments = [
       ...shippedShipments,
       ...expectedShipments,
       ...receivedShipments,
+      ...arrivedShipments,
     ];
 
     if (!allShipments.length) {
